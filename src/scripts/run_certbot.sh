@@ -11,6 +11,21 @@ fi
 
 exit_code=0
 set -x
+
+# Check for wildcard domain
+if [ ! -z "$WILDCARD_DOMAIN" ]; then
+    if is_renewal_required $WILDCARD_DOMAIN; then
+        # Renewal required for this doman.
+        # Last one happened over a week ago (or never)
+        if ! get_certificate *.$WILDCARD_DOMAIN $CERTBOT_EMAIL; then
+            error "Cerbot failed for $domain. Check the logs for details."
+            exit_code=1
+        fi
+    else
+        echo "Not run certbot for $domain; last renewal happened just recently."
+    fi
+fi
+
 # Loop over every domain we can find
 for domain in $(parse_domains); do
     if is_renewal_required $domain; then
